@@ -1,0 +1,65 @@
+# ── FoodFrenzy Deployment ───────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foodfrenzy
+  namespace: foodfrenzy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: foodfrenzy
+  template:
+    metadata:
+      labels:
+        app: foodfrenzy
+    spec:
+      containers:
+        - name: foodfrenzy
+          # imagePullPolicy: Never tells K8s to use the local image
+          # (the one we built directly into Minikube's Docker daemon)
+          image: foodfrenzy:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8083
+          env:
+            # Override application.properties with K8s environment variables
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://mysql:3306/foodfrenzy?useSSL=false&allowPublicKeyRetrieval=true
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: password
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: update
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8083
+            initialDelaySeconds: 45
+            periodSeconds: 10
+          resources:
+            requests: { cpu: "200m", memory: "512Mi" }
+            limits:   { cpu: "500m", memory: "768Mi" }
+---
+# ── FoodFrenzy Service ──────────────────────────────────────────
+# NodePort type exposes the app on a fixed port on the Minikube node
+apiVersion: v1
+kind: Service
+metadata:
+  name: foodfrenzy-service
+  namespace: foodfrenzy
+spec:
+  selector:
+    app: foodfrenzy
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 8083
+      nodePort: 30080   # You will access the app at <minikube-ip>:30080
