@@ -237,7 +237,7 @@ pipeline {
       slackSend(
         channel: env.SLACK_CHANNEL,
         color: 'good',
-        tokenCredentialId: 'Slack notification token',
+        tokenCredentialId: 'slack-token-k8s',
         message:
           ":white_check_mark: FoodFrenzy Build #${BUILD_NUMBER} SUCCESS\n" +
           "Application URL: ${env.APP_URL}\n" +
@@ -282,7 +282,7 @@ pipeline {
       slackSend(
         channel: env.SLACK_CHANNEL,
         color: 'danger',
-        tokenCredentialId: 'Slack notification token',
+        tokenCredentialId: 'slack-token-k8s',
         message:
           ":x: FoodFrenzy Build #${BUILD_NUMBER} FAILED\n" +
           "Console Log: ${BUILD_URL}console"
