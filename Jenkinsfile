@@ -23,7 +23,7 @@ pipeline {
 
     // Notifications
     EMAIL_TO      = 'bhuvan.abc.b12.reports@gmail.com'
-    SLACK_CHANNEL = '#ci-notifications'
+    SLACK_CHANNEL = 'C0A1H9UDPUG'
   }
 
   stages {
@@ -237,7 +237,7 @@ pipeline {
       slackSend(
         channel: env.SLACK_CHANNEL,
         color: 'good',
-        tokenCredentialId: 'slack-token',
+        tokenCredentialId: 'Slack notification token',
         message:
           ":white_check_mark: FoodFrenzy Build #${BUILD_NUMBER} SUCCESS\n" +
           "Application URL: ${env.APP_URL}\n" +
@@ -282,7 +282,7 @@ pipeline {
       slackSend(
         channel: env.SLACK_CHANNEL,
         color: 'danger',
-        tokenCredentialId: 'slack-token',
+        tokenCredentialId: 'Slack notification token',
         message:
           ":x: FoodFrenzy Build #${BUILD_NUMBER} FAILED\n" +
           "Console Log: ${BUILD_URL}console"
