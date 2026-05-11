@@ -1,78 +1,111 @@
 # ── MySQL Persistent Volume Claim ──────────────────────────────
-# Gives MySQL a small amount of disk space to store its data
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mysql-pvc
   namespace: foodfrenzy
+
 spec:
-  accessModes: [ReadWriteOnce]
+  accessModes:
+    - ReadWriteOnce
+
   resources:
     requests:
       storage: 1Gi
+
 ---
 # ── MySQL Deployment ────────────────────────────────────────────
 apiVersion: apps/v1
 kind: Deployment
+
 metadata:
   name: mysql
   namespace: foodfrenzy
+
 spec:
   replicas: 1
+
   selector:
     matchLabels:
       app: mysql
+
   template:
     metadata:
       labels:
         app: mysql
+
     spec:
       containers:
         - name: mysql
           image: mysql:8.0
+
           ports:
             - containerPort: 3306
+
           env:
-            # These values come from the 'mysql-secret' Secret
+            # Root password
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mysql-secret
                   key: root-password
+
+            # Database name
             - name: MYSQL_DATABASE
               value: foodfrenzy
+
+            # Application DB user
             - name: MYSQL_USER
               valueFrom:
                 secretKeyRef:
                   name: mysql-secret
                   key: username
+
+            # Application DB password
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mysql-secret
                   key: password
+
+            # Allow remote connections from Kubernetes pods
+            - name: MYSQL_ROOT_HOST
+              value: "%"
+
           volumeMounts:
             - name: mysql-storage
               mountPath: /var/lib/mysql
+
           resources:
-            requests: { cpu: "100m", memory: "256Mi" }
-            limits:   { cpu: "500m", memory: "512Mi" }
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
       volumes:
         - name: mysql-storage
           persistentVolumeClaim:
             claimName: mysql-pvc
+
 ---
 # ── MySQL Service ───────────────────────────────────────────────
-# This gives FoodFrenzy a stable DNS name to reach MySQL: 'mysql'
 apiVersion: v1
 kind: Service
+
 metadata:
   name: mysql
   namespace: foodfrenzy
+
 spec:
   selector:
     app: mysql
+
   ports:
-    - port: 3306
+    - name: mysql
+      port: 3306
       targetPort: 3306
-  clusterIP: None   # Headless service — pods connect by name directly
+
+  type: ClusterIP
