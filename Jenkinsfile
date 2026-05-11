@@ -17,7 +17,7 @@ pipeline {
     IMAGE_TAG     = "${BUILD_NUMBER}"
     K8S_NAMESPACE = 'foodfrenzy'
     // Replace with your real email and Slack channel
-    EMAIL_TO      = 'your-email@example.com'
+    EMAIL_TO      = 'bhuvan.abc.b12.reports@gmail.com'
     SLACK_CHANNEL = '#ci-notifications'
   }
  
@@ -27,7 +27,7 @@ pipeline {
     // Runs on the Jenkins Linux agent.
     // Checks out the FoodFrenzy source code from GitHub.
     stage('Checkout') {
-      agent { label 'linux docker agent' }
+      agent { label 'agent' }
       steps {
         // Clean the workspace before checking out
         cleanWs()
@@ -46,7 +46,7 @@ pipeline {
       agent {
         docker {
           image 'maven:3.9-eclipse-temurin-17'
-          label 'linux docker agent'
+          label 'agent'
           // Cache the local Maven repo between builds to save download time
           args '-v /root/.m2:/root/.m2'
         }
@@ -73,7 +73,7 @@ pipeline {
     // We build the image INTO Minikube's Docker daemon so Kubernetes
     // can use it without any registry.
     stage('Docker Build') {
-      agent { label 'linux docker agent' }
+      agent { label 'agent' }
       steps {
         // Retrieve the JAR built in the previous stage
         unstash 'app-jar'
